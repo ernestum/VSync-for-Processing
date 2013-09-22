@@ -97,6 +97,7 @@ public class ValueReceiver {
 	private void processValuePacket(String valuePacket)
 	{
 		Scanner s = new Scanner(valuePacket);
+//		System.out.println(valuePacket);
 		s.useDelimiter("\\|");
 		int valueIndex = s.nextInt();
 		if(valueIndex == -1)
@@ -147,5 +148,15 @@ public class ValueReceiver {
 		return VERSION;
 	}
 
+	public void setSerial(Serial serial)
+	{
+		serial.clear();
+		this.serial = serial;
+	}
+	
+	public void stopSerial()
+	{
+		serial.stop();
+	}
 }
 

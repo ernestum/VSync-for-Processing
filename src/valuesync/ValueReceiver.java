@@ -25,15 +25,13 @@
  * @version     ##library.prettyVersion## (##library.version##)
  */
 
-package valuesync.library;
+package valuesync;
 
 
 import java.util.ArrayList;
-import java.util.Scanner;
 
-import processing.core.*;
+import processing.core.PApplet;
 import processing.serial.Serial;
-
 
 
 /**
@@ -48,21 +46,17 @@ import processing.serial.Serial;
  *
  */
 
-public class ValueReceiver {
-	
+public class ValueReceiver 
+{
+	private StringBuffer messageBuffer = new StringBuffer();
 	private Serial serial;
 	private PApplet parent;
-	private ArrayList<String> values;
-
+	private ArrayList<String> observedVariables = new ArrayList<String>();
 	
 	public final static String VERSION = "##library.prettyVersion##";
 	
 
-	public ValueReceiver(PApplet parent, Serial serial)
-	{
-		this(parent, serial, new String[] {});
-	}
-	
+
 	/**
 	 * a Constructor, usually called in the setup() method in your sketch to
 	 * initialize and start the library.
@@ -70,51 +64,72 @@ public class ValueReceiver {
 	 * @example Hello
 	 * @param parent
 	 */
-	public ValueReceiver(PApplet parent, Serial serial, String[] values) {
+	public ValueReceiver(PApplet parent, Serial serial) 
+	{
 		this.parent = parent;
 		this.serial = serial;
-		this.values = new ArrayList<String>(values.length);
-		
-		for(String value : values)
-			this.values.add(value);
-		
-		serial.readStringUntil('#');
-		
 		parent.registerMethod("pre", this);
+	}
+	
+	public ValueReceiver observe(String variable)
+	{
+		observedVariables.add(variable);
+		return this;
 	}
 	
 	public void pre()
 	{
-		for(String valuePacket = serial.readStringUntil('#'); valuePacket != null; valuePacket = serial.readStringUntil('#'))
+		while(serial.available() > 0)
 		{
-			if("#".equals(valuePacket)) //Just a keepalive
-				continue;
+			char in = serial.readChar();
+//			PApplet.print(in);
+			if(in == '#')
+			{
+				analyzeMessage(messageBuffer.toString());
+				messageBuffer = new StringBuffer();
+			}
+			else
+			{
+				messageBuffer.append(in);
+			}
 			
-			processValuePacket(valuePacket);
 		}
 	}
 	
-	private void processValuePacket(String valuePacket)
+	private void analyzeMessage(String s)
 	{
-		Scanner s = new Scanner(valuePacket);
-//		System.out.println(valuePacket);
-		s.useDelimiter("\\|");
-		int valueIndex = s.nextInt();
-		if(valueIndex == -1)
+		if(s == null || s.length() == 0) return;
+		String[] items = s.split("\\|");
+		if(items.length == 0) return;
+		
+		try
 		{
-			for(int i = 0; i < values.size(); i++)
-				setValue(values.get(i), s.nextInt());
-		}
-		else
-		{
-			if(valueIndex >=0 && valueIndex < values.size())
+			if(items[0].charAt(0) == 'A')
 			{
-				int value = s.nextInt();
-				setValue(values.get(valueIndex), value);
+				if(items.length != observedVariables.size() + 1)
+				{
+					return;
+				}
+				for(int i = 0; i < observedVariables.size(); i++)
+				{
+					setValue(observedVariables.get(i), Integer.parseInt(items[i+1]));
+				}
 			}
 			else
-				System.err.printf("Warning: we received a %dth value but you only delcared %d values. Something is missconfigured here!\n", valueIndex + 1, values.size());
+			{
+				if(items.length % 2 != 0) return;
+				
+				for(int i = 0; i < items.length / 2; i++)
+				{
+					int index = Integer.parseInt(items[i*2]);
+					int value = Integer.parseInt(items[i*2 + 1]);
+					setValue(observedVariables.get(index), value);
+				}
+			}
 		}
+		catch (NumberFormatException e)
+		{}
+		
 	}
 	
 	private void setValue(String valueName, int value)
@@ -128,16 +143,17 @@ public class ValueReceiver {
 		} catch (IllegalAccessException e) {
 			System.err.printf("%s is not acessible variable in you sketch! Try declaring it as public.\n", valueName);
 		} catch (NoSuchFieldException e) {
-			System.err.printf("%s is not an variable in you sketch!\n", valueName);
+			System.err.printf("%s is not a variable in you sketch!\n", valueName);
 		}
 	}
 	
-
 	
-	private void welcome() {
+	//TODO: ist das kunst oder kann das weg? vvv
+	
+	private void welcome() 
+	{
 		System.out.println("##library.name## ##library.prettyVersion## by ##author##");
 	}
-	
 	
 	/**
 	 * return the version of the library.

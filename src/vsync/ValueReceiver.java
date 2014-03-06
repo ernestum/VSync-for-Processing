@@ -25,7 +25,7 @@
  * @version     ##library.prettyVersion## (##library.version##)
  */
 
-package valuesync;
+package vsync;
 
 
 import java.util.ArrayList;
@@ -35,18 +35,17 @@ import processing.serial.Serial;
 
 
 /**
- * This is a template class and can be used to start a new processing library or tool.
- * Make sure you rename this class as well as the name of the example package 'template' 
- * to your own library or tool naming convention.
  * 
- * @example Hello 
+ * The {@link ValueReceiver} is used to synchronize values from an Arduino to the Processing sketch.
+ * If you have a variable on your Arduino -- for example the reading from an analog pin --
+ * you can use {@link ValueReceiver} to synchronize it with a variable in your sketch.
+ *  
+ * Have a look at the SimpleReceiver example for the minimal steps to get going.
  * 
- * (the tag @example followed by the name of an example included in folder 'examples' will
- * automatically include the example in the javadoc.)
  *
  */
 
-public class ValueReceiver 
+public class ValueReceiver implements VSyncConstants 
 {
 	private StringBuffer messageBuffer = new StringBuffer();
 	private Serial serial;
@@ -58,11 +57,10 @@ public class ValueReceiver
 
 
 	/**
-	 * a Constructor, usually called in the setup() method in your sketch to
-	 * initialize and start the library.
+	 * Creates a new instance of {@link ValueReceiver} using a given {@link Serial} interface.
 	 * 
-	 * @example Hello
-	 * @param parent
+	 * @param parent The {@link PApplet} you wan to attach to.
+	 * @param serial The {@link Serial} interface to be used for communication.
 	 */
 	public ValueReceiver(PApplet parent, Serial serial) 
 	{
@@ -71,6 +69,12 @@ public class ValueReceiver
 		parent.registerMethod("pre", this);
 	}
 	
+	/**
+	 * Starts the observation of a new variable.
+	 * Whenever the variable changed on the Arduino it is updated in the sketch too.
+	 * The variable should be declared <code>public</code>and must be of type <code>int</code>!
+	 * @param The name of the variable to observe.
+	 */
 	public ValueReceiver observe(String variable)
 	{
 		observedVariables.add(variable);
@@ -83,7 +87,7 @@ public class ValueReceiver
 		{
 			char in = serial.readChar();
 //			PApplet.print(in);
-			if(in == '#')
+			if(in == MESSAGE_END)
 			{
 				analyzeMessage(messageBuffer.toString());
 				messageBuffer = new StringBuffer();
@@ -98,13 +102,13 @@ public class ValueReceiver
 	
 	private void analyzeMessage(String s)
 	{
-		if(s == null || s.length() == 0) return;
-		String[] items = s.split("\\|");
-		if(items.length == 0) return;
-		
 		try
 		{
-			if(items[0].charAt(0) == 'A')
+			if(s == null || s.length() == 0) return;
+			String[] items = s.split("\\" + DELIMITER);
+			if(items.length == 0) return;
+		
+			if(items[0].length() == 1 && items[0].charAt(0) == ALL_VALUES)
 			{
 				if(items.length != observedVariables.size() + 1)
 				{
@@ -112,7 +116,7 @@ public class ValueReceiver
 				}
 				for(int i = 0; i < observedVariables.size(); i++)
 				{
-					setValue(observedVariables.get(i), Integer.parseInt(items[i+1]));
+					setValue(i, Integer.parseInt(items[i+1]));
 				}
 			}
 			else
@@ -123,13 +127,20 @@ public class ValueReceiver
 				{
 					int index = Integer.parseInt(items[i*2]);
 					int value = Integer.parseInt(items[i*2 + 1]);
-					setValue(observedVariables.get(index), value);
+					setValue(index, value);
 				}
 			}
 		}
-		catch (NumberFormatException e)
-		{}
+		catch (Exception e)
+		{
+			
+		}
 		
+	}
+	
+	private void setValue(int index, int value)
+	{
+		setValue(observedVariables.get(index), value);
 	}
 	
 	private void setValue(String valueName, int value)

@@ -1,8 +1,8 @@
 /*
     BidirectionalSync
  
-    If you are just getting started with the VSync library the SimpleSender
-    and SimpleReceiver examples are recommended.
+    If you are just getting started with the VSync library, the SimpleSender
+    and SimpleReceiver examples are recommended first.
     
     This example shows how to synchronize variables in two directions:
     from the Arduino to this sketch and from this sketch to the Arduino.

@@ -47,6 +47,7 @@ public class ValueSender implements VSyncConstants
 	private Serial serial;
 	private PApplet parent;
 	private long lastValueSent;
+	private long creationTime;
 	
 	private ArrayList<String> observedVariables = new ArrayList<String>();
 	private ArrayList<Integer> previousValues = new ArrayList<Integer>();
@@ -60,6 +61,7 @@ public class ValueSender implements VSyncConstants
 	{
 		this.parent = parent;
 		this.serial = serial;
+		this.creationTime = parent.millis();
 		
 		parent.registerMethod("pre", this);
 	}
@@ -90,6 +92,9 @@ public class ValueSender implements VSyncConstants
 	 */
 	private void sync() 
 	{
+		if(parent.millis() - creationTime < 900)
+			return;
+		
 		int numValuesChanged = 0;
 		for(int i = 0; i < observedVariables.size(); i++) 
 		{

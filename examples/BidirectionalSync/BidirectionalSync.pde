@@ -19,7 +19,7 @@
     up if you move your mouse because only when variables change they need to be synced.
     
     Use this sketch together with the ValueDoubler example of the Arduino version of the 
-    VSync library ( https://github.com/erniejunior/VSync )
+    VSync library ( https://github.com/ernestum/VSync )
  
     Author: Maximilian Ernestus
  

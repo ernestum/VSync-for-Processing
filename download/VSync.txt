@@ -8,7 +8,7 @@ name = VSync for Processing
 authorList = Maximilian Ernestus
 
 # A web page for your library, NOT a direct link to where to download it.
-url = http://erniejunior.github.io/VSync-for-Processing/
+url = http://ernestum.github.io/VSync-for-Processing/
 
 # The category of your library, must be one (or many) of the following:
 #   "3D"            "Animation"     "Compilations"      "Data"          

@@ -7,7 +7,7 @@
  
     Use it together with the SimpleSender example of the Arduino version
     of the VSync library.
-    ( https://github.com/erniejunior/VSync )
+    ( https://github.com/ernestum/VSync )
  
     Author: Maximilian Ernestus
  

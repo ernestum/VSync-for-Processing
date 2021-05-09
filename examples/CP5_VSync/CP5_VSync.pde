@@ -5,7 +5,7 @@
     sliders to an Arduino.
     It should be used together with the SimpleReceiver example of the Arduino
     version of the VSync Library
-    ( https://github.com/erniejunior/VSync )
+    ( https://github.com/ernestum/VSync )
     
     Author: Maximilian Ernestus
    
